@@ -47,23 +47,20 @@ exports.createCard = async (req, res) => {
 };
 
 exports.reorderCards = async (req, res) => {
-    const { cards } = req.body;
+    const { cardId, destinationIndex, destinationListId } = req.body;
 
-    if (!Array.isArray(cards)) {
-        return res.status(400).json({ message: "cards must be an array" });
-    }
-
-    for (let i = 0; i < cards.length; i++) {
-        const item = cards[i];
+    try {
         await db.query(
             "UPDATE cards SET position=?, list_id=? WHERE id=?",
-            [item.position, item.list_id, item.id]
+            [destinationIndex, destinationListId, cardId]
         );
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error("Reorder error:", err);
+        res.status(500).json({ error: "Reorder failed" });
     }
-
-    res.send("done");
 };
-
 exports.updateCard = async (req, res) => {
     let { due_date } = req.body;
 

@@ -163,74 +163,81 @@ export default function Board({ search, filter, onFilterOptionsChange }) {
 
     // 🔄 Drag & Drop (unchanged, safe)
     const handleDragEnd = async (result) => {
-        if (!result.destination) return;
+    if (!result.destination) return;
 
-        const { source, destination, type } = result;
+    const { source, destination, draggableId, type } = result;
 
-        // LIST REORDER
-        if (type === "list") {
-            const newLists = Array.from(data);
-            const [moved] = newLists.splice(source.index, 1);
-            newLists.splice(destination.index, 0, moved);
+    // LIST REORDER
+    if (type === "list") {
+        const newLists = Array.from(data);
+        const [moved] = newLists.splice(source.index, 1);
+        newLists.splice(destination.index, 0, moved);
 
-            setData(newLists);
+        setData(newLists);
 
+        try {
             await API.put("/lists/reorder", {
                 lists: newLists.map((l, index) => ({
                     id: l.id,
                     position: index
                 }))
             });
-
-            return;
+        } catch (err) {
+            console.error("List reorder failed:", err);
         }
 
-        // CARD DRAG
-        setManualCardOrder(true);
-        const newData = data.map(list => ({
-            ...list,
-            cards: [...(Array.isArray(list.cards) ? list.cards : [])]
-        }));
+        return;
+    }
 
-        const sourceList = newData.find(
-            l => String(l.id) === source.droppableId
-        );
-        const destList = newData.find(
-            l => String(l.id) === destination.droppableId
-        );
-        if (!sourceList || !destList) return;
+    // CARD REORDER
+    const sourceList = data.find(
+        (l) => String(l.id) === source.droppableId
+    );
+    const destList = data.find(
+        (l) => String(l.id) === destination.droppableId
+    );
 
-        const draggedCardId = extractCardId(result.draggableId);
-        const sourceCardIndex = sourceList.cards.findIndex(
-            (card) => String(card.id) === draggedCardId
-        );
-        if (sourceCardIndex === -1) return;
+    if (!sourceList || !destList) return;
 
-        const [movedCard] = sourceList.cards.splice(sourceCardIndex, 1);
+    const cardId = String(draggableId).split("-").pop();
 
-        if (sourceList.id === destList.id) {
-            sourceList.cards.splice(destination.index, 0, movedCard);
-        } else {
-            destList.cards.splice(destination.index, 0, movedCard);
-            movedCard.list_id = destList.id;
-        }
+    // 🔥 UPDATE UI FIRST (optimistic update)
+    const newData = data.map((list) => ({
+        ...list,
+        cards: [...(list.cards || [])]
+    }));
 
-        setData(newData);
+    const srcList = newData.find(
+        (l) => String(l.id) === source.droppableId
+    );
+    const dstList = newData.find(
+        (l) => String(l.id) === destination.droppableId
+    );
 
-        // Sync backend
-        const updatedCards = [];
-        newData.forEach(list => {
-            list.cards.forEach((card, index) => {
-                updatedCards.push({
-                    id: card.id,
-                    list_id: list.id,
-                    position: index
-                });
-            });
+    const cardIndex = srcList.cards.findIndex(
+        (c) => String(c.id) === cardId
+    );
+
+    if (cardIndex === -1) return;
+
+    const [movedCard] = srcList.cards.splice(cardIndex, 1);
+
+    dstList.cards.splice(destination.index, 0, movedCard);
+    movedCard.list_id = dstList.id;
+
+    setData(newData);
+
+    // 🔥 BACKEND CALL (FIXED)
+    try {
+        await API.put("/cards/reorder", {
+            cardId: cardId,
+            destinationIndex: destination.index,
+            destinationListId: destination.droppableId
         });
-
-        await API.put("/cards/reorder", { cards: updatedCards });
-    };
+    } catch (err) {
+        console.error("Card reorder failed:", err);
+    }
+};
 
     // 🔥 FINAL DERIVED DATA (SEARCH + SORT — NO MUTATION)
     const processedData = data.map(list => {
