@@ -24,10 +24,6 @@
     transform: none !important;
 }
 
-/* ❌ REMOVE HOVER TRANSFORM COMPLETELY */
-.list:hover {
-    /* removed intentionally */
-}
 
 /* HEADER */
 .list-header {
