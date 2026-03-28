@@ -4,11 +4,8 @@
     border-radius: 12px;
     margin-bottom: 10px;
     cursor: pointer;
-    transition: 0.2s;
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    transition: box-shadow 0.2s ease;
-    will-change: transform;
-    position: relative;
+
     user-select: none;
 }
 
@@ -21,8 +18,9 @@
     box-shadow: 0 8px 20px rgba(0,0,0,0.2);
 }
 
-.card:not(.dragging):hover {
-    transform: translateY(-3px) scale(1.02);
+.card.dragging {
+    background: #fff7ed;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
 }
 
 .card.completed {
