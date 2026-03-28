@@ -47,13 +47,19 @@ exports.createCard = async (req, res) => {
 };
 
 exports.reorderCards = async (req, res) => {
-    const { cardId, destinationIndex, destinationListId } = req.body;
+    const { cards } = req.body;
+
+    if (!cards || !Array.isArray(cards)) {
+        return res.status(400).json({ error: "Invalid payload" });
+    }
 
     try {
-        await db.query(
-            "UPDATE cards SET position=?, list_id=? WHERE id=?",
-            [destinationIndex, destinationListId, cardId]
-        );
+        for (const card of cards) {
+            await db.query(
+                "UPDATE cards SET list_id=?, position=? WHERE id=?",
+                [card.list_id, card.position, card.id]
+            );
+        }
 
         res.json({ success: true });
     } catch (err) {

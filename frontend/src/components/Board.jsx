@@ -162,25 +162,92 @@ export default function Board({ search, filter, onFilterOptionsChange }) {
     };
 
     // 🔄 Drag & Drop (unchanged, safe)
-    exports.reorderCards = async (req, res) => {
-    const { cards } = req.body;
+    const handleDragEnd = async (result) => {
+    if (!result.destination) return;
 
-    if (!cards || !Array.isArray(cards)) {
-        return res.status(400).json({ error: "Invalid payload" });
-    }
+    const { source, destination, draggableId, type } = result;
 
-    try {
-        for (const card of cards) {
-            await db.query(
-                "UPDATE cards SET list_id=?, position=? WHERE id=?",
-                [card.list_id, card.position, card.id]
-            );
+    // ✅ LIST REORDER
+    if (type === "list") {
+        const newLists = Array.from(data);
+        const [moved] = newLists.splice(source.index, 1);
+        newLists.splice(destination.index, 0, moved);
+
+        setData(newLists);
+
+        try {
+            await API.put("/lists/reorder", {
+                lists: newLists.map((l, index) => ({
+                    id: l.id,
+                    position: index
+                }))
+            });
+        } catch (err) {
+            console.error("List reorder failed:", err);
         }
 
-        res.json({ success: true });
+        return;
+    }
+
+    // ✅ CARD REORDER
+    const newData = data.map((list) => ({
+        ...list,
+        cards: [...(list.cards || [])]
+    }));
+
+    const sourceList = newData.find(
+        (l) => String(l.id) === source.droppableId
+    );
+    const destList = newData.find(
+        (l) => String(l.id) === destination.droppableId
+    );
+
+    if (!sourceList || !destList) return;
+
+    const cardId = String(draggableId).split("-").pop();
+
+    const sourceIndex = sourceList.cards.findIndex(
+        (c) => String(c.id) === cardId
+    );
+
+    if (sourceIndex === -1) return;
+
+    // 🔥 REMOVE CARD
+    const [movedCard] = sourceList.cards.splice(sourceIndex, 1);
+
+    // 🔥 INSERT CARD
+    destList.cards.splice(destination.index, 0, movedCard);
+
+    // 🔥 UPDATE LIST ID
+    movedCard.list_id = destList.id;
+
+    // 🔥 UPDATE UI
+    setData(newData);
+
+    // 🔥 PREPARE BULK UPDATE (MOST IMPORTANT FIX)
+    const updatedCards = [];
+
+    newData.forEach((list) => {
+        list.cards.forEach((card, index) => {
+            updatedCards.push({
+                id: card.id,
+                list_id: list.id,
+                position: index
+            });
+        });
+    });
+
+    // 🔥 BACKEND CALL (FINAL FIX)
+    try {
+        await API.put("/cards/reorder", {
+            cards: updatedCards
+        });
+
+        // ✅ FORCE SYNC WITH DB
+        fetchData();
+
     } catch (err) {
-        console.error("Reorder error:", err);
-        res.status(500).json({ error: "Reorder failed" });
+        console.error("Card reorder failed:", err);
     }
 };
 
