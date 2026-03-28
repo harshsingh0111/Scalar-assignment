@@ -67,6 +67,8 @@
 .list-cards {
     max-height: calc(100vh - 280px);
     overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: 10px;
     padding-right: 2px;
 
     min-height: 50px;

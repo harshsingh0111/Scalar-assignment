@@ -117,12 +117,8 @@ export default function List({
 
                     {/* 🔥 CARDS */}
                     <Droppable droppableId={String(list.id)} type="card">
-                        {(provided) => (
-                            <div
-                                className="list-cards"
-                                ref={provided.innerRef}
-                                {...provided.droppableProps}
-                            >
+                        {(provided, snapshot) => (
+                            <div className={`list-cards ${snapshot.isDraggingOver ? "drag-over" : ""}`}>
                                 {cards.map((card, i) => (
                                     <Card
                                         key={card.id}
