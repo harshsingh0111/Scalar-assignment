@@ -19,6 +19,31 @@ export default function Board({ search, filter, onFilterOptionsChange }) {
                     cards: Array.isArray(list.cards) ? list.cards : [],
                 }))
             );
+            // ✅ EXTRACT LABELS & EMPLOYEES
+const allLabels = new Set();
+const allEmployees = new Set();
+
+lists.forEach(list => {
+    (list.cards || []).forEach(card => {
+        if (card.labels) {
+            card.labels.split(",").forEach(l => {
+                if (l.trim()) allLabels.add(l.trim());
+            });
+        }
+
+        if (card.assignees) {
+            card.assignees.split(",").forEach(e => {
+                if (e.trim()) allEmployees.add(e.trim());
+            });
+        }
+    });
+});
+
+// ✅ SEND TO NAVBAR
+onFilterOptionsChange?.({
+    labels: Array.from(allLabels),
+    employees: Array.from(allEmployees),
+});
         } catch (error) {
             console.error("Failed to fetch board data:", error);
             setData([]);
@@ -137,29 +162,44 @@ export default function Board({ search, filter, onFilterOptionsChange }) {
                         {...provided.droppableProps}
                     >
                         {data.map((list, index) => {
-                            const filteredCards = (list.cards || []).filter((card) => {
-                                if (search && !card.title.toLowerCase().includes(search.toLowerCase()))
-                                    return false;
+                            let filteredCards = (list.cards || []).filter((card) => {
+    // 🔍 Search
+    if (search && !card.title.toLowerCase().includes(search.toLowerCase()))
+        return false;
 
-                                const selectedLabel = filter.startsWith("label:")
-                                    ? filter.slice(6)
-                                    : "";
-                                const selectedEmployee = filter.startsWith("employee:")
-                                    ? filter.slice(9)
-                                    : "";
+    // 🏷️ Label filter
+    if (filter.startsWith("label:")) {
+        const selectedLabel = filter.slice(6).toLowerCase();
+        const labels = String(card.labels || "").toLowerCase();
+        if (!labels.includes(selectedLabel)) return false;
+    }
 
-                                if (selectedLabel) {
-                                    const labels = String(card.labels || "").toLowerCase();
-                                    if (!labels.includes(selectedLabel.toLowerCase())) return false;
-                                }
+    // 👤 Employee filter
+    if (filter.startsWith("employee:")) {
+        const selectedEmployee = filter.slice(9).toLowerCase();
+        const assignees = String(card.assignees || "").toLowerCase();
+        if (!assignees.includes(selectedEmployee)) return false;
+    }
 
-                                if (selectedEmployee) {
-                                    const assignees = String(card.assignees || "").toLowerCase();
-                                    if (!assignees.includes(selectedEmployee.toLowerCase())) return false;
-                                }
+    return true;
+});
 
-                                return true;
-                            });
+// 📅 SORTING (IMPORTANT)
+if (filter === "nearest") {
+    filteredCards.sort((a, b) => {
+        const dateA = a.due_date ? new Date(a.due_date) : new Date(8640000000000000);
+        const dateB = b.due_date ? new Date(b.due_date) : new Date(8640000000000000);
+        return dateA - dateB;
+    });
+}
+
+if (filter === "farthest") {
+    filteredCards.sort((a, b) => {
+        const dateA = a.due_date ? new Date(a.due_date) : new Date(0);
+        const dateB = b.due_date ? new Date(b.due_date) : new Date(0);
+        return dateB - dateA;
+    });
+}
 
                             return (
                                 <List
