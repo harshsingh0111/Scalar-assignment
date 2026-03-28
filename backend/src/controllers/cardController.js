@@ -65,7 +65,14 @@ exports.reorderCards = async (req, res) => {
 };
 
 exports.updateCard = async (req, res) => {
-    const { title, description, due_date } = req.body;
+    let { due_date } = req.body;
+
+    if (due_date) {
+        due_date = new Date(due_date).toISOString().split("T")[0];
+    }else{
+        due_date=null;
+    }
+    const { title, description } = req.body;
 
     await db.query(
         "UPDATE cards SET title=?, description=?, due_date=? WHERE id=?",
