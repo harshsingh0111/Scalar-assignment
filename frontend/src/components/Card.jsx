@@ -29,16 +29,24 @@ export default function Card({ card, listId, index, onCardUpdated }) {
                     className={`card ${isCompleted ? "completed" : ""} ${
                         snapshot.isDragging ? "dragging" : ""
                     }`}
-                    style={provided.draggableProps.style}
+                    style={{
+    ...provided.draggableProps.style,
+    zIndex: snapshot.isDragging ? 9999 : "auto",
+}}
                     onClick={() => setOpen(true)}
                 >
                     {/* 🔥 DRAG HANDLE (small area) */}
                     <div
-                        {...provided.dragHandleProps}
-                        style={{ cursor: "grab", marginBottom: "6px" }}
-                    >
-                        ☰
-                    </div>
+    {...provided.dragHandleProps}
+    style={{
+        cursor: "grab",
+        marginBottom: "6px",
+        fontSize: "18px",
+        opacity: 0.6
+    }}
+>
+    ⋮⋮
+</div>
 
                     <input
                         type="checkbox"

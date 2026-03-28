@@ -1,14 +1,21 @@
 .card {
-    background: rgba(255,255,255,0.9);
+    background: rgba(255,255,255,0.95);
     padding: 12px;
     border-radius: 12px;
     margin-bottom: 10px;
     cursor: pointer;
+
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 
     user-select: none;
+
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
+/* 🔥 HOVER (SAFE) */
+.card:hover {
+    transform: translateY(-2px);
+}
 .drag-over {
     background: rgba(99,102,241,0.08);
 }
@@ -18,9 +25,18 @@
     box-shadow: 0 8px 20px rgba(0,0,0,0.2);
 }
 
+/* 🔥 DRAGGING MAGIC */
 .card.dragging {
-    background: #fff7ed;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    transform: rotate(3deg) scale(1.05);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.25);
+    z-index: 999;
+    position: relative;
+    z-index: 9999;
+}
+
+/* 🔥 SMOOTH MOVE */
+.card {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .card.completed {

@@ -7,7 +7,6 @@
     border: 1px solid red;
 
     background: rgba(255,255,255,0.25);
-    backdrop-filter: blur(12px);
 
     border-radius: 16px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.1);
@@ -15,14 +14,16 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
-
     max-height: calc(100vh - 120px);
 
     overflow: visible;
 
 }
 
-
+.drag-over {
+    background: rgba(99,102,241,0.1);
+    border-radius: 10px;
+}
 /* HEADER */
 .list-header {
     display: flex;
@@ -63,12 +64,14 @@
 
 /* CARDS CONTAINER */
 .list-cards {
-    min-height: 50px;
+    min-height: 60px;
     display: flex;
     flex-direction: column;
     gap: 10px;
 
     overflow-y: auto;
+
+    transition: background 0.2s ease;
 }
 
 /* SCROLLBAR */

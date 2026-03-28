@@ -11,6 +11,11 @@
     padding: 20px;
     z-index: 1000;
 }
+/* 🔥 prevents text selection during drag */
+body {
+    -webkit-user-select: none;
+    user-select: none;
+}
 
 .modal-content {
     background: white;

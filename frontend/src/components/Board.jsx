@@ -163,10 +163,53 @@ export default function Board({ search, filter, onFilterOptionsChange }) {
 
                             return (
                                 <List
-                                    key={list.id}
-                                    list={{ ...list, cards: filteredCards }}
-                                    index={index}
-                                />
+    key={list.id}
+    list={{ ...list, cards: filteredCards }}
+    index={index}
+
+    // ✅ FIX 1: Update card instantly
+    onCardCreated={(listId, newCard) => {
+        setData(prev =>
+            prev.map(l =>
+                l.id === listId
+                    ? { ...l, cards: [...l.cards, newCard] }
+                    : l
+            )
+        );
+    }}
+
+    // ✅ FIX 2: Update card toggle/edit instantly
+    onCardUpdated={(updatedCard) => {
+        setData(prev =>
+            prev.map(l => ({
+                ...l,
+                cards: l.cards.map(c =>
+                    c.id === updatedCard.id ? updatedCard : c
+                )
+            }))
+        );
+    }}
+
+    // ✅ FIX 3: Delete list instantly
+    onDeleteList={async (listId) => {
+        try {
+            await API.delete(`/lists/${listId}`);
+        } catch {
+            await API.post(`/lists/delete/${listId}`);
+        }
+
+        setData(prev => prev.filter(l => l.id !== listId));
+    }}
+
+    // ✅ FIX 4: Rename instantly
+    onRenameList={(listId, newTitle) => {
+        setData(prev =>
+            prev.map(l =>
+                l.id === listId ? { ...l, title: newTitle } : l
+            )
+        );
+    }}
+/>
                             );
                         })}
 
