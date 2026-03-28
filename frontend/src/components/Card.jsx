@@ -31,13 +31,21 @@ export default function Card({ card, listId, index, onCardUpdated }) {
                             snapshot.isDragging ? "dragging" : ""
                         }`}
                         style={provided.draggableProps.style}
-                        onClick={() => setOpen(true)}
+
+                        // 🔥 FIX: prevent click during drag
+                        onClick={(e) => {
+                            if (snapshot.isDragging) return;
+                            setOpen(true);
+                        }}
                     >
                         <input
                             type="checkbox"
                             checked={isCompleted}
                             onChange={toggle}
+
+                            // 🔥 FIX: prevent drag interference
                             onClick={(e) => e.stopPropagation()}
+                            onMouseDown={(e) => e.stopPropagation()}
                         />
 
                         <div className="labels">
