@@ -7,9 +7,10 @@
     transition: 0.2s;
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     transition: transform 0.15s ease;
-    user-select: none;
-    transform: translateZ(0);
     will-change: transform;
+    position: relative;
+    transform: none !important;
+    user-select: none;
 }
 
 .dragging{
