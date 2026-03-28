@@ -222,7 +222,7 @@ export default function Board({ search, filter, onFilterOptionsChange }) {
     movedCard.list_id = destList.id;
 
     // 🔥 UPDATE UI
-    setData(newData);
+    setData(JSON.parse(JSON.stringify(newData)));
 
     // 🔥 PREPARE BULK UPDATE (MOST IMPORTANT FIX)
     const updatedCards = [];
@@ -243,8 +243,6 @@ export default function Board({ search, filter, onFilterOptionsChange }) {
             cards: updatedCards
         });
 
-        // ✅ FORCE SYNC WITH DB
-        fetchData();
 
     } catch (err) {
         console.error("Card reorder failed:", err);

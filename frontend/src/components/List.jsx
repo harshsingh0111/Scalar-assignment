@@ -111,7 +111,7 @@ return (
                 <div className="list-cards" ref={provided.innerRef} {...provided.droppableProps}>
                 {cards.map((card, i) => (
                     <Card
-                        key={`${list.id}-${card.id}-${i}`}
+                        key={card.id}
                         card={card}
                         listId={list.id}
                         index={i}
