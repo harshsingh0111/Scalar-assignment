@@ -11,4 +11,8 @@ app.use("/cards", require("./routes/cardRoutes"));
 app.use("/labels", require("./routes/labelRoutes"));
 app.use("/assignees", require("./routes/assigneeRoutes"));
 
-app.listen(5000, () => console.log("Server running"));
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
